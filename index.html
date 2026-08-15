@@ -82,6 +82,30 @@
     opacity:0.7;
   }
 
+  .signature{
+    position:absolute;
+    bottom:14px;
+    right:20px;
+    font-family:'Caveat', cursive;
+    font-weight:600;
+    font-size:17px;
+    color: var(--gold);
+    opacity:0.55;
+    letter-spacing:1px;
+    pointer-events:none;
+  }
+
+  .heart-signature{
+    font-family:'Work Sans', sans-serif;
+    font-weight:600;
+    font-size:11px;
+    letter-spacing:0.3em;
+    color: var(--gold);
+    opacity:0.75;
+    text-transform:uppercase;
+    margin: -6px 0 22px;
+  }
+
   .btn-row{
     height:64px;
     display:flex;
@@ -195,10 +219,12 @@
       <button id="yesBtn">Sí</button>
       <button id="noBtn">No</button>
     </div>
+    <span class="signature">JMMC</span>
   </div>
 
   <div class="finale" id="finale">
     <svg id="constellation" viewBox="0 0 300 300"></svg>
+    <p class="heart-signature">JMMC</p>
     <p class="finale-text" id="finaleText"><span class="cursor">&nbsp;</span></p>
   </div>
 </div>
