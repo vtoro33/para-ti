@@ -83,11 +83,11 @@
   }
 
   .btn-row{
-    position:relative;
     height:64px;
     display:flex;
     align-items:center;
     justify-content:center;
+    gap:16px;
   }
 
   button{
@@ -97,6 +97,7 @@
     border-radius:999px;
     cursor:pointer;
     outline-offset:4px;
+    white-space:nowrap;
   }
 
   #yesBtn{
@@ -107,20 +108,20 @@
     color:#221226;
     background: linear-gradient(135deg, var(--gold), var(--rose));
     box-shadow: 0 8px 26px var(--rose-glow);
+    transform-origin:center;
     transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), box-shadow 0.35s ease;
   }
-  #yesBtn:hover{ transform: scale(1.04) translateY(-1px); }
   #yesBtn:active{ transform: scale(0.97); }
 
   #noBtn{
-    position:absolute;
+    position:relative;
     z-index:4;
     padding:14px 30px;
-    font-size:15px;
-    color: var(--lavender);
-    background: rgba(255,255,255,0.06);
-    border:1px solid rgba(185,189,224,0.35);
-    transition: transform 0.28s ease, left 0.35s ease, top 0.35s ease, opacity 0.3s ease;
+    font-size:16px;
+    color: var(--star-white);
+    background: linear-gradient(135deg, #e5484d, #b0242c);
+    box-shadow: 0 8px 22px rgba(229,72,77,0.4);
+    transition: left 0.35s ease, top 0.35s ease, opacity 0.3s ease;
   }
 
   /* ---------- FINALE ---------- */
@@ -188,8 +189,8 @@
 
 <div class="stage">
   <div class="card" id="card">
-    <h1>Quiero verte.<br>¿Tú quieres verme?</h1>
-    <p class="sub">Responde con honestidad</p>
+    <h1>Quiero verte...<br>¿Tú quieres verme?</h1>
+    <p class="sub">Responde con sinceridad</p>
     <div class="btn-row">
       <button id="yesBtn">Sí</button>
       <button id="noBtn">No</button>
@@ -291,38 +292,70 @@ const card = document.getElementById('card');
 const finale = document.getElementById('finale');
 
 const noPhrases = [
-  "No", "¿Segura?", "Piénsalo bien...", "¿En serio?",
-  "Última oportunidad", "No creo que quieras eso", "Mejor no", "¿De verdad, de verdad?"
+  "No", "¿Seguro?", "Piénsalo bien...", "¿En serio?",
+  "Última oportunidad", "No creo que quieras eso", "Mejor dale al otro",
+  "¿De verdad, de verdad?", "Casi casi...", "Estás muy cerca",
+  "Ríndete ya 😏", "Ni lo pienses"
 ];
 
 let attempts = 0;
-const MAX_SCALE_YES = 2.4;
-const MIN_SCALE_NO = 0.45;
+let noBtnWidth = 0;
+let noBtnHeight = 0;
+const MAX_SCALE_YES = 3.6;
 
 function dodge(){
   attempts++;
 
-  const rowRect = btnRow.getBoundingClientRect();
-  const btnRect = noBtn.getBoundingClientRect();
+  // La primera vez, sacamos el botón del flujo normal y lo anclamos DENTRO de la tarjeta
+  // (posición absoluta relativa a .card, no a la ventana — así nunca depende del tamaño de pantalla)
+  if(attempts === 1){
+    const rect = noBtn.getBoundingClientRect();
+    const cardRect = card.getBoundingClientRect();
+    noBtnWidth = rect.width;
+    noBtnHeight = rect.height;
+    noBtn.style.position = 'absolute';
+    noBtn.style.left = `${rect.left - cardRect.left}px`;
+    noBtn.style.top = `${rect.top - cardRect.top}px`;
+    noBtn.offsetHeight; // forzar reflow
+  }
 
-  const maxX = Math.max(rowRect.width - btnRect.width, 20);
-  const maxY = Math.max(140, 0);
+  const inset = 10;
+  const cardW = card.clientWidth;
+  const cardH = card.clientHeight;
 
-  const newX = Math.random() * maxX;
-  const newY = (Math.random() - 0.5) * 100;
+  const usableW = Math.max(cardW - noBtnWidth - inset * 2, 1);
+  const usableH = Math.max(cardH - noBtnHeight - inset * 2, 1);
 
-  noBtn.style.position = 'fixed';
-  const cardRect = card.getBoundingClientRect();
-  const targetLeft = cardRect.left + 30 + Math.random() * Math.max(cardRect.width - 140, 40);
-  const targetTop = cardRect.top + cardRect.height * 0.6 + (Math.random()-0.3) * 120;
+  // El botón salta a puntos a lo largo del BORDE de la tarjeta (no del centro),
+  // así nunca queda cerca ni encima del botón "Sí"
+  const top = usableW;      // borde superior
+  const right = usableH;    // borde derecho
+  const bottom = usableW;   // borde inferior
+  const left = usableH;     // borde izquierdo
+  const total = top + right + bottom + left;
 
-  noBtn.style.left = `${Math.min(Math.max(targetLeft, 16), window.innerWidth - 130)}px`;
-  noBtn.style.top = `${Math.min(Math.max(targetTop, 16), window.innerHeight - 60)}px`;
+  let r = Math.random() * total;
+  let newLeft, newTop;
 
-  const scale = Math.max(MIN_SCALE_NO, 1 - attempts * 0.09);
-  noBtn.style.transform = `scale(${scale})`;
+  if (r < top){
+    newLeft = inset + r;
+    newTop = inset;
+  } else if (r < top + right){
+    newLeft = inset + usableW;
+    newTop = inset + (r - top);
+  } else if (r < top + right + bottom){
+    newLeft = inset + usableW - (r - top - right);
+    newTop = inset + usableH;
+  } else {
+    newLeft = inset;
+    newTop = inset + usableH - (r - top - right - bottom);
+  }
 
-  noBtn.textContent = noPhrases[Math.min(attempts, noPhrases.length - 1)];
+  noBtn.style.left = `${newLeft}px`;
+  noBtn.style.top = `${newTop}px`;
+
+  // el texto NUNCA se encoge, solo cambia el mensaje para mantenerlo legible
+  noBtn.textContent = noPhrases[Math.min(attempts - 1, noPhrases.length - 1)];
 
   const yesScale = Math.min(MAX_SCALE_YES, 1 + attempts * 0.14);
   yesBtn.style.transform = `scale(${yesScale})`;
@@ -330,9 +363,10 @@ function dodge(){
   track("intento_no", { intento_numero: attempts, texto_boton: noBtn.textContent });
 }
 
-noBtn.addEventListener('mouseenter', dodge);
-noBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); dodge(); }, {passive:false});
-noBtn.addEventListener('click', (e)=>{ e.preventDefault(); dodge(); });
+// El botón "No" se mueve apenas el cursor (o el dedo) se acerca — no hace falta hacer clic
+noBtn.addEventListener('pointerenter', (e) => { dodge(); });
+// respaldo por si algún navegador móvil no dispara pointerenter con el toque
+noBtn.addEventListener('touchstart', (e) => { e.preventDefault(); dodge(); }, {passive:false});
 
 yesBtn.addEventListener('click', () => {
   track("dijo_que_si", { intentos_de_no: attempts });
