@@ -306,7 +306,13 @@ let noBtnWidth = 0;
 let noBtnHeight = 0;
 const MAX_SCALE_YES = 3.6;
 
+let lastDodgeTime = 0;
 function dodge(){
+  // evita que un mismo toque dispare el evento dos veces (pointerenter + touchstart)
+  const now = Date.now();
+  if (now - lastDodgeTime < 250) return;
+  lastDodgeTime = now;
+
   attempts++;
 
   // La primera vez, sacamos el botón del flujo normal y lo anclamos DENTRO de la tarjeta
