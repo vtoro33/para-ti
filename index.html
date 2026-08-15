@@ -272,7 +272,7 @@ setTimeout(shootingStar, 3000);
 
 /* ================= TRACKING ================= */
 /* Reemplaza esta URL por tu propio endpoint de Formspree (ver instrucciones) */
-const FORM_ENDPOINT = "https://formspree.io/f/xnpazewb";
+const FORM_ENDPOINT = "https://formspree.io/f/mnpabaav";
 
 function track(eventName, extra={}){
   const payload = {
@@ -369,7 +369,8 @@ function dodge(){
   const yesScale = Math.min(MAX_SCALE_YES, 1 + attempts * 0.14);
   yesBtn.style.transform = `scale(${yesScale})`;
 
-  track("intento_no", { intento_numero: attempts, texto_boton: noBtn.textContent });
+  // el intento queda contado en memoria; ya no se manda un envío a Formspree por cada clic
+  // (así no se agota la cuota mensual — solo se manda un envío al final, con el total)
 }
 
 // El botón "No" se mueve apenas el cursor (o el dedo) se acerca — no hace falta hacer clic
